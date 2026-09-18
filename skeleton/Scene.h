@@ -2,6 +2,7 @@
 
 #include <string>
 #include "PxPhysicsAPI.h"
+#include "RenderUtils.hpp"
 
 // Clase base para las distintas escenas de la aplicación.
 // Provee la interfaz mínima que debe implementar cualquier escena:

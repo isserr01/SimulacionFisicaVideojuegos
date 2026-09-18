@@ -10,10 +10,18 @@ public:
 
     void init() override
     {
-        physx::PxShape* shape = CreateShape(physx::PxSphereGeometry(6.0f));
-        m_transform = physx::PxTransform(physx::PxVec3(0.0f, 10.0f, 0.0f));
+        physx::PxShape* X = CreateShape(physx::PxSphereGeometry(1.0f));
+        physx::PxShape* Y = CreateShape(physx::PxSphereGeometry(1.0f));
+        physx::PxShape* Z = CreateShape(physx::PxSphereGeometry(1.0f));
 
-        m_renderItem = new RenderItem(shape, &m_transform, Vector4(1.0f, 0.0f, 0.0f, 1.0f));
+        m_transformX = physx::PxTransform(physx::PxVec3(3.0f, 1.0f, 0.0f));
+        m_transformY = physx::PxTransform(physx::PxVec3(0.0f, 4.0f, 0.0f));
+
+
+        //m_transformZ = physx::PxTransform(physx::PxVec3(0.0f, 10.0f, 0.0f));
+
+        m_renderItemX = new RenderItem(X, &m_transformX, Vector4(1.0f, 0.0f, 0.0f, 1.0f));
+        m_renderItemY = new RenderItem(Y, &m_transformY, Vector4(0.0f, 1.0f, 0.0f, 1.0f));
 
     }
 
@@ -24,18 +32,26 @@ public:
 
     void keyPress(unsigned char key, const physx::PxTransform& camera) override {
         if (key == 'r' || key == 'R') {
-            m_transform.p = physx::PxVec3(0.0f, 10.0f, 0.0f); // Reset
+            m_transformX.p = physx::PxVec3(0.0f, 10.0f, 0.0f); // Reset
         }
     }
 
     void cleanup() override {
-        if (m_renderItem) {
-            m_renderItem->release(); 
-            m_renderItem = nullptr;
+        if (m_renderItemX) {
+            m_renderItemX->release(); 
+            m_renderItemX = nullptr;
+        }
+        if (m_renderItemY) {
+            m_renderItemY->release();
+            m_renderItemY = nullptr;
         }
     }
 
 private:
-    physx::PxTransform m_transform;
-    RenderItem* m_renderItem{ nullptr };
+    physx::PxTransform m_transformX;
+    physx::PxTransform m_transformY;
+    physx::PxTransform m_transformZ;
+    RenderItem* m_renderItemX{ nullptr };
+    RenderItem* m_renderItemY{ nullptr };
+    RenderItem* m_renderItemZ{ nullptr };
 };

@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "Scene.h"
 #include "RenderUtils.hpp"
@@ -10,18 +10,21 @@ public:
 
     void init() override
     {
-        physx::PxShape* X = CreateShape(physx::PxSphereGeometry(1.0f));
-        physx::PxShape* Y = CreateShape(physx::PxSphereGeometry(1.0f));
-        physx::PxShape* Z = CreateShape(physx::PxSphereGeometry(1.0f));
+        physx::PxShape* sphere = CreateShape(physx::PxSphereGeometry(1.0f));
 
-        m_transformX = physx::PxTransform(physx::PxVec3(3.0f, 1.0f, 0.0f));
-        m_transformY = physx::PxTransform(physx::PxVec3(0.0f, 4.0f, 0.0f));
+        Vector3D u(3.f, 1.f, 0.f);
+        Vector3D v(0.f, 4.f, 0.f);
+        Vector3D w = u.cross(v);
 
 
-        //m_transformZ = physx::PxTransform(physx::PxVec3(0.0f, 10.0f, 0.0f));
+        m_transformX = physx::PxTransform(u.normalize() * 5.0f);
+        m_transformY = physx::PxTransform(v.normalize() * 5.0f);
+        m_transformZ = physx::PxTransform(w.normalize() * 5.0f);
 
-        m_renderItemX = new RenderItem(X, &m_transformX, Vector4(1.0f, 0.0f, 0.0f, 1.0f));
-        m_renderItemY = new RenderItem(Y, &m_transformY, Vector4(0.0f, 1.0f, 0.0f, 1.0f));
+        m_renderItemX = new RenderItem(sphere, &m_transformX, Vector4(1.0f, 0.0f, 0.0f, 1.0f));
+        m_renderItemY = new RenderItem(sphere, &m_transformY, Vector4(0.0f, 1.0f, 0.0f, 1.0f));
+        m_renderItemZ = new RenderItem(sphere, &m_transformZ, Vector4(0.0f, 0.0f, 1.0f, 1.0f));
+
 
     }
 

@@ -1,4 +1,4 @@
-#include "SceneManager.h"
+﻿#include "SceneManager.h"
 #include <iostream>
 
 // Solicita el cambio de escena. Si el nombre no está registrado, se escribe
@@ -53,6 +53,9 @@ void SceneManager::keyPress(unsigned char key, const physx::PxTransform& cameraT
     }
     else if (key == '0') {
         changeScene("P0S_Scene");
+    }
+    else if (key == '1') {
+        changeScene("P1S_Scene");
     }
 
     // Si no es una tecla de navegación global, se la pasamos a la escena activa

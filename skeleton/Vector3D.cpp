@@ -1,4 +1,4 @@
-#include "Vector3D.h"
+﻿#include "Vector3D.h"
 #include <cmath>
 
 Vector3D::Vector3D(physx::PxVec3 vec)
@@ -28,9 +28,16 @@ Vector3D Vector3D::cross(const Vector3D& v) const
 	return Vector3D(y * v.z - z * v.y, z * v.x - x * v.z, x * v.y - y * v.x);
 }
 
-bool Vector3D::operator=(Vector3D other)
+Vector3D& Vector3D::operator=(const Vector3D& other)
 {
-	return x == other.x && y == other.y && z == other.z;
+	if (this != &other)
+	{
+		x = other.x;
+		y = other.y;
+		z = other.z;
+	}
+
+	return *this;
 }
 
 Vector3D Vector3D::operator+(Vector3D other)
@@ -45,7 +52,7 @@ Vector3D Vector3D::operator-(Vector3D other)
 
 Vector3D Vector3D::operator*(int n)
 {
-	return Vector3D(x * n, y * n, z * n);Vector3D();
+	return Vector3D(x * n, y * n, z * n);
 }
 
 void Vector3D::operator+=(Vector3D other)

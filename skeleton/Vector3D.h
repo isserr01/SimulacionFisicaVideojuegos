@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include <PxPhysicsAPI.h>
 
@@ -20,7 +20,7 @@ public:
 	Vector3D cross(const Vector3D& v) const;
 
 	//operators
-	bool operator=(Vector3D other);
+	Vector3D& operator=(const Vector3D& other);
 	Vector3D operator+(Vector3D other);
 	Vector3D operator-(Vector3D other);
 	Vector3D operator*(int n);

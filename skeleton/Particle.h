@@ -1,5 +1,4 @@
-﻿
-#pragma once
+﻿#pragma once
 
 #include "Vector3D.h"
 #include <PxPhysics.h>
@@ -9,23 +8,22 @@ class RenderItem;
 class Particle
 {
 public:
-
-    Particle(Vector3D Pos, Vector3D Vel);
-    Particle(Vector3D Pos, Vector3D Vel,
-        Vector3D Acc, double Damping);
-
+    Particle(Vector3D position, Vector3D velocity);
+    Particle(Vector3D position, Vector3D velocity,
+        Vector3D acceleration, double damping);
     ~Particle();
 
-    void integrate(double t);
+    Particle(const Particle&) = delete;
+    Particle& operator=(const Particle&) = delete;
 
-    double getMass() const
-    {
-        return mass;
-    }
-    void setMass(double m)
-    {
-        mass = m;
-    }
+    void integrate(double dt);
+    void reset(Vector3D position, Vector3D velocity,
+        Vector3D acceleration, double damping);
+    void setPosition(Vector3D position);
+    Vector3D getPosition() const;
+
+    double getMass() const { return mass; }
+    void setMass(double value) { mass = value; }
 
 private:
     Vector3D vel;

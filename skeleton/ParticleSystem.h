@@ -1,31 +1,39 @@
-#pragma once
+﻿#pragma once
 
 #include <vector>
-#include <random>
-#include <cmath>
+#include <cstddef>
 
 class Particle;
 
-class ParticleSystem {
+class ParticleSystem
+{
+public:
+    explicit ParticleSystem(std::size_t poolCapacity = 1000,
+        float gravity = -10.0f);
+    ~ParticleSystem();
 
-	//object pool de partículas
-	struct Particles {
-		std::vector<float> posX, posY, posZ;
-		std::vector<float> velX, velY, velZ;
-		std::vector<float> colorR, colorG, colorB;
-		std::vector<float> vida;
-	};
+    ParticleSystem(const ParticleSystem&) = delete;
+    ParticleSystem& operator=(const ParticleSystem&) = delete;
 
-	std::default_random_engine generator;
-	std::normal_distribution<float> lifetime_dist{ 3.0f, 0.5f };
-	float particle_lifetime = lifetime_dist(generator);
+    // Devuelve false si el pool está lleno.
+    bool create(float x, float y, float z,
+        float velx, float vely, float velz,
+        float lifetime, int emitter = 0);
 
-	ParticleSystem();
-	~ParticleSystem();
+    void update(float deltaTime);
 
-	void create(float x, float y, float z, float velx, float vely, float velz, float lifetime);
-	void update(float deltatime);
+    std::size_t getActiveCount() const { return activeCount; }
+    std::size_t getCapacity() const { return particles.size(); }
+    void clear();
 
-	
+private:
+    std::vector<Particle*> particles;
+    std::vector<float> vida;
+    std::vector<float> edad;
+    std::vector<int> emisor;
+
+    std::size_t activeCount;
+    float gravity;
+
+    void hideParticle(Particle* particle);
 };
-

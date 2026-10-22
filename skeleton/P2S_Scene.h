@@ -1,8 +1,8 @@
+﻿
 #pragma once
 
 #include "Scene.h"
-
-class Particle;
+#include "ParticleSystem.h"
 
 class P2S_Scene : public Scene
 {
@@ -13,12 +13,20 @@ public:
     }
 
     void init() override;
+    void update(double dt) override;
+    void keyPress(
+        unsigned char key,
+        const physx::PxTransform& camera
+    ) override;
+    void cleanup() override;
 
 private:
+    ParticleSystem m_particleSystem{ 1000, -10.0f };
 
-    std::vector<Particle*> m_particles;
-    double m_realGravity = 10;
+    double m_realGravity = 10.0;
 
+    double m_emissionTimer = 0.0;
+    double m_emissionInterval = 0.05;
 
+    void emitParticle(int emitter);
 };
-

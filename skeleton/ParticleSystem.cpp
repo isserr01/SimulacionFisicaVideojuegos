@@ -1,5 +1,7 @@
 ﻿#include "ParticleSystem.h"
 #include "Particle.h"
+#include "ForceGenerator.h"
+#include "ParticleGenerator.h"
 
 #include <algorithm>
 #include <iostream>
@@ -41,7 +43,7 @@ ParticleSystem::~ParticleSystem()
 
 bool ParticleSystem::create(float x, float y, float z,
     float velx, float vely, float velz,
-    float lifetime, int emitter)
+    float lifetime, int emitter, double mass)
 {
     if (activeCount >= particles.size())
         return false;
@@ -53,11 +55,7 @@ bool ParticleSystem::create(float x, float y, float z,
         Vector3D(velx, vely, velz),
         Vector3D(0.0, gravity, 0.0),
         1.0);
-
-    std::cout << "CREATE: velY=" << vely
-        << " accY=" << gravity
-        << " particleY=" << particle->getPosition().y
-        << '\n';
+    particle->setMass(mass > 0.0 ? mass : 1.0);
 
     edad[activeCount] = 0.0f;
     vida[activeCount] = std::max(MIN_LIFETIME, lifetime);
@@ -69,43 +67,31 @@ bool ParticleSystem::create(float x, float y, float z,
 
 void ParticleSystem::update(float deltaTime)
 {
-    if (deltaTime <= 0.0f || activeCount == 0)
+    if (deltaTime <= 0.0f)
         return;
 
     // Evita saltos enormes si la aplicación se pausa durante un frame.
     const float dt = std::min(deltaTime, MAX_DELTA_TIME);
+
+    // El sistema es responsable de actualizar sus emisores.
+    for (ParticleGenerator* generator : particleGenerators)
+        if (generator != nullptr)
+            generator->update(*this, dt);
 
     std::size_t i = 0;
     while (i < activeCount)
     {
         Particle* particle = particles[i];
         edad[i] += dt;
-        const Vector3D before = particle->getPosition();
+
+        for (const auto& entry : forceGenerators)
+        {
+            if (entry.enabled && entry.generator != nullptr)
+                particle->applyForceGenerator(*entry.generator, dt);
+        }
 
         particle->integrate(dt);
 
-        const Vector3D after = particle->getPosition();
-
-        if (i == 0)
-        {
-            std::cout << "Antes Y: " << before.y
-                << " | Despues Y: " << after.y
-                << '\n';
-        }
-
-
-        if (i == 0)
-        {
-            static int frames = 0;
-
-            if (++frames % 30 == 0)
-            {
-                std::cout << "Posicion: "
-                    << particle->getPosition().x << ", "
-                    << particle->getPosition().y << ", "
-                    << particle->getPosition().z << '\n';
-            }
-        }
 
         const Vector3D position = particle->getPosition();
         const bool expired = edad[i] >= vida[i];
@@ -150,6 +136,51 @@ void ParticleSystem::hideParticle(Particle* particle)
             Vector3D(0.0, 0.0, 0.0),
             1.0);
     }
+}
+
+void ParticleSystem::addForceGenerator(ForceGenerator* generator, bool enabled)
+{
+    if (generator != nullptr)
+        forceGenerators.push_back({ generator, enabled });
+}
+
+void ParticleSystem::addParticleGenerator(ParticleGenerator* generator)
+{
+    if (generator != nullptr)
+        particleGenerators.push_back(generator);
+}
+
+void ParticleSystem::clearParticleGenerators()
+{
+    particleGenerators.clear();
+}
+
+void ParticleSystem::setParticleGeneratorEnabled(std::size_t index, bool enabled)
+{
+    if (index < particleGenerators.size() && particleGenerators[index] != nullptr)
+        particleGenerators[index]->setActive(enabled);
+}
+
+bool ParticleSystem::isParticleGeneratorEnabled(std::size_t index) const
+{
+    return index < particleGenerators.size() && particleGenerators[index] != nullptr
+        && particleGenerators[index]->isActive();
+}
+
+void ParticleSystem::clearForceGenerators()
+{
+    forceGenerators.clear();
+}
+
+void ParticleSystem::setForceGeneratorEnabled(std::size_t index, bool enabled)
+{
+    if (index < forceGenerators.size())
+        forceGenerators[index].enabled = enabled;
+}
+
+bool ParticleSystem::isForceGeneratorEnabled(std::size_t index) const
+{
+    return index < forceGenerators.size() && forceGenerators[index].enabled;
 }
 
 void ParticleSystem::clear()

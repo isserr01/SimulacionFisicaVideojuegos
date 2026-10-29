@@ -4,6 +4,7 @@
 #include <PxPhysics.h>
 
 class RenderItem;
+class ForceGenerator;
 
 class Particle
 {
@@ -11,6 +12,8 @@ public:
     Particle(Vector3D position, Vector3D velocity);
     Particle(Vector3D position, Vector3D velocity,
         Vector3D acceleration, double damping);
+    Particle(Vector3D position, Vector3D velocity,
+        Vector3D acceleration, double damping, double massValue);
     ~Particle();
 
     Particle(const Particle&) = delete;
@@ -25,7 +28,19 @@ public:
     double getMass() const { return mass; }
     void setMass(double value) { mass = value; }
 
+    Vector3D getVelocity() const { return vel; }
+    Vector3D getAcceleration() const { return acc; }
+    double getDamping() const { return damping; }
+    void setAcceleration(Vector3D value) { acc = value; }
+    void scaleVelocity(double factor);
+
+    void addForce(Vector3D force);
+    void applyForceGenerator(ForceGenerator& generator, double dt);
+    void clearForces();
+
+
 private:
+    Vector3D forceAccum;
     Vector3D vel;
     Vector3D acc;
     double damping;

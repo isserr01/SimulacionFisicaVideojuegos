@@ -42,10 +42,6 @@ void P2S_Scene::update(double dt)
 
     static int frames = 0;
 
-    if (++frames % 60 == 0)
-        std::cout << "Update ejecutado. dt = " << dt << '\n';
-
-
     // Actualizar las partículas existentes.
     m_particleSystem.update(static_cast<float>(dt));
 

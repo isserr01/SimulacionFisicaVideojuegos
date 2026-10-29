@@ -1,4 +1,5 @@
 ﻿#include "Particle.h"
+#include "ForceGenerator.h"
 #include "RenderUtils.hpp"
 
 #include <cmath>
@@ -17,10 +18,17 @@ Particle::Particle(Vector3D position, Vector3D velocity)
 
 Particle::Particle(Vector3D position, Vector3D velocity,
     Vector3D acceleration, double dampingValue)
-    : vel(velocity),
+    : Particle(position, velocity, acceleration, dampingValue, 5.0)
+{
+}
+
+Particle::Particle(Vector3D position, Vector3D velocity,
+    Vector3D acceleration, double dampingValue, double massValue)
+    : forceAccum(0.0, 0.0, 0.0),
+    vel(velocity),
     acc(acceleration),
     damping(dampingValue),
-    mass(5.0),
+    mass(massValue > 0.0 ? massValue : 1.0),
     pose(physx::PxVec3(
         static_cast<float>(position.x),
         static_cast<float>(position.y),
@@ -55,22 +63,12 @@ void Particle::integrate(double dt)
     if (dt <= 0.0)
         return;
 
-    static int frames = 0;
+    const double invMass = (mass > 0.0) ? 1.0 / mass : 0.0;
 
-    if (++frames % 30 == 0)
-    {
-        std::cout << "Velocidad Y: " << vel.y
-            << " | Aceleracion Y: " << acc.y
-            << " | dt: " << dt << '\n';
-    }
+    vel.x += (acc.x + forceAccum.x * invMass) * dt;
+    vel.y += (acc.y + forceAccum.y * invMass) * dt;
+    vel.z += (acc.z + forceAccum.z * invMass) * dt;
 
-
-    // Primero actualizamos la velocidad con la aceleración.
-    vel.x += acc.x * dt;
-    vel.y += acc.y * dt;
-    vel.z += acc.z * dt;
-
-    // Después desplazamos la partícula con la velocidad actualizada.
     pose.p.x += static_cast<float>(vel.x * dt);
     pose.p.y += static_cast<float>(vel.y * dt);
     pose.p.z += static_cast<float>(vel.z * dt);
@@ -80,7 +78,7 @@ void Particle::integrate(double dt)
     vel.y *= factor;
     vel.z *= factor;
 
-
+    clearForces();
 }
 
 void Particle::reset(Vector3D position, Vector3D velocity,
@@ -88,14 +86,19 @@ void Particle::reset(Vector3D position, Vector3D velocity,
 {
     vel = velocity;
     acc = acceleration;
-    this->damping = damping;
-    pose.p = physx::PxVec3(position.x, position.y, position.z);
+    damping = dampingValue;
+    forceAccum = Vector3D(0.0, 0.0, 0.0);
+    pose.p = physx::PxVec3(
+        static_cast<float>(position.x),
+        static_cast<float>(position.y),
+        static_cast<float>(position.z));
+}
 
-
-    std::cout << "RESET: velY=" << vel.y
-        << " accY=" << acc.y
-        << " posY=" << pose.p.y
-        << '\n';
+void Particle::scaleVelocity(double factor)
+{
+    vel.x *= factor;
+    vel.y *= factor;
+    vel.z *= factor;
 }
 
 void Particle::setPosition(Vector3D position)
@@ -108,4 +111,21 @@ void Particle::setPosition(Vector3D position)
 Vector3D Particle::getPosition() const
 {
     return Vector3D(pose.p.x, pose.p.y, pose.p.z);
+}
+
+void Particle::applyForceGenerator(ForceGenerator& generator, double dt)
+{
+    generator.updateForce(*this, dt);
+}
+
+void Particle::addForce(Vector3D force)
+{
+    forceAccum.x += force.x;
+    forceAccum.y += force.y;
+    forceAccum.z += force.z;
+}
+
+void Particle::clearForces()
+{
+    forceAccum = Vector3D(0.0, 0.0, 0.0);
 }

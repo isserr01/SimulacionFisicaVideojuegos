@@ -10,13 +10,13 @@ void P3S_Scene::init()
     particleSystem.clearParticleGenerators();
 
     // Generadores de fuerza compartibles entre distintos sistemas.
+
+    Vector3D centro(35.0, 45.0, 35.0);
+
     gravity.reset(new GravityGenerator(Vector3D(0.0, -9.8, 0.0)));
-    wind.reset(new WindGenerator(Vector3D(0.0, 2.0, 0.0),
-        12.0, Vector3D(5.0, 0.0, 0.0), 2.0));
-    vortex.reset(new VortexGenerator(Vector3D(0.0, 2.0, 0.0),
-        12.0, 1.2, 1.5));
-    explosion.reset(new ExplosionGenerator(Vector3D(0.0, 2.0, 0.0),
-        12.0, 120.0, 0.8));
+    wind.reset(new WindGenerator(centro, 12.0, Vector3D(5.0, 0.0, 0.0), 2.0));
+    vortex.reset(new VortexGenerator(centro, 12.0, 1.2, 1.5));
+    explosion.reset(new ExplosionGenerator(centro,12.0, 120.0, 0.8));
 
     particleSystem.addForceGenerator(gravity.get(), true);
     particleSystem.addForceGenerator(wind.get(), false);
@@ -25,7 +25,7 @@ void P3S_Scene::init()
 
     // Los generadores almacenan una partícula modelo y emiten nuevas
     // partículas con sus propiedades físicas y posiciones aleatorias.
-    normalModel.reset(new Particle(Vector3D(-3.0, 1.0, 0.0),
+    normalModel.reset(new Particle(Vector3D(35.0, 45.0, 35.0),
         Vector3D(0.0, 5.0, 0.0), Vector3D(0.0, 0.0, 0.0), 0.999, 1.0));
     gaussianModel.reset(new Particle(Vector3D(3.0, 1.0, 0.0),
         Vector3D(0.0, 7.0, 0.0), Vector3D(0.0, 0.0, 0.0), 0.999, 8.0));
@@ -36,7 +36,7 @@ void P3S_Scene::init()
         0.8, ParticleGenerator::Distribution::Gaussian));
 
     particleSystem.addParticleGenerator(uniformGenerator.get());
-    particleSystem.addParticleGenerator(normalGenerator.get());
+    //particleSystem.addParticleGenerator(normalGenerator.get());
 }
 
 void P3S_Scene::update(double dt)
@@ -84,8 +84,8 @@ void P3S_Scene::keyPress(unsigned char key,
         particleSystem.setForceGeneratorEnabled(0,
             !particleSystem.isForceGeneratorEnabled(0));
         break;
-    case 'w':
-    case 'W':
+    case 'r':
+    case 'R':
         particleSystem.setForceGeneratorEnabled(1,
             !particleSystem.isForceGeneratorEnabled(1));
         break;
@@ -93,11 +93,6 @@ void P3S_Scene::keyPress(unsigned char key,
     case 'T':
         particleSystem.setForceGeneratorEnabled(2,
             !particleSystem.isForceGeneratorEnabled(2));
-        break;
-    case 'x':
-    case 'X':
-        particleSystem.setForceGeneratorEnabled(3,
-            !particleSystem.isForceGeneratorEnabled(3));
         break;
     case 'e':
     case 'E':
@@ -121,6 +116,8 @@ void P3S_Scene::keyPress(unsigned char key,
 
 void P3S_Scene::cleanup()
 {
+    // El sistema guarda referencias no propietarias a los generadores.
+    // Eliminar esas referencias antes de destruir los objetos.
     particleSystem.clearForceGenerators();
     particleSystem.clearParticleGenerators();
     uniformGenerator.reset();

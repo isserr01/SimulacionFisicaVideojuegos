@@ -1,4 +1,4 @@
-#include <vector>
+﻿#include <vector>
 
 #include "PxPhysicsAPI.h"
 
@@ -57,7 +57,8 @@ void keyboardCallback(unsigned char key, int x, int y)
 	if(key==27)
 		exit(0);
 
-	if(!sCamera->handleKey(key, x, y))
+	const bool sceneActionKey = (key == ' ' || key == 'p' || key == 'P');
+	if (sceneActionKey || !sCamera->handleKey(key, x, y))
 		keyPress(key, sCamera->getTransform());
 }
 

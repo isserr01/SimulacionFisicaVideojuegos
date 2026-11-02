@@ -1,14 +1,33 @@
-﻿#include "Particle.h"
+﻿
+#include "Particle.h"
 #include "ForceGenerator.h"
 #include "RenderUtils.hpp"
 
 #include <cmath>
 #include <iostream>
+#include <random>
 
 namespace
 {
-    constexpr float PARTICLE_RADIUS = 0.25f;
+    // Tamaño de las partículas (antes 0.25).
+    constexpr float PARTICLE_RADIUS = 0.50f;
     constexpr float PARTICLE_HIDDEN_COORD = 10000.0f;
+
+    // Generador aleatorio compartido.
+    std::mt19937 randomEngine(std::random_device{}());
+
+    // Colores vivos y luminosos.
+    std::uniform_real_distribution<float> colorDistribution(0.25f, 1.0f);
+
+    Vector4 generateRandomColor()
+    {
+        return Vector4(
+            colorDistribution(randomEngine),
+            colorDistribution(randomEngine),
+            colorDistribution(randomEngine),
+            1.0f
+        );
+    }
 }
 
 Particle::Particle(Vector3D position, Vector3D velocity)
@@ -43,7 +62,8 @@ Particle::Particle(Vector3D position, Vector3D velocity,
         renderItem = new RenderItem(
             shape,
             &pose,
-            Vector4(1.0f, 0.0f, 0.0f, 1.0f));
+            generateRandomColor()
+        );
 
         shape->release();
     }
@@ -74,6 +94,7 @@ void Particle::integrate(double dt)
     pose.p.z += static_cast<float>(vel.z * dt);
 
     const double factor = std::pow(damping, dt);
+
     vel.x *= factor;
     vel.y *= factor;
     vel.z *= factor;
@@ -87,7 +108,9 @@ void Particle::reset(Vector3D position, Vector3D velocity,
     vel = velocity;
     acc = acceleration;
     damping = dampingValue;
+
     forceAccum = Vector3D(0.0, 0.0, 0.0);
+
     pose.p = physx::PxVec3(
         static_cast<float>(position.x),
         static_cast<float>(position.y),
@@ -128,4 +151,23 @@ void Particle::addForce(Vector3D force)
 void Particle::clearForces()
 {
     forceAccum = Vector3D(0.0, 0.0, 0.0);
+}
+
+void Particle::setColor(float r, float g, float b, float a)
+{
+    if (renderItem != nullptr)
+    {
+        renderItem->color.x = r;
+        renderItem->color.y = g;
+        renderItem->color.z = b;
+        renderItem->color.w = a;
+    }
+}
+
+void Particle::setRandomColor()
+{
+    if (renderItem != nullptr)
+    {
+        renderItem->color = generateRandomColor();
+    }
 }

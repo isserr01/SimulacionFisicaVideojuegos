@@ -39,6 +39,7 @@ Vector3D Projectile::scaleForce(Vector3D force) const
 bool Projectile::fire(ParticleSystem& system, Vector3D position,
     Vector3D direction, float lifetime) const
 {
+
     const double length = std::sqrt(direction.x * direction.x +
         direction.y * direction.y + direction.z * direction.z);
     if (length <= 1e-8)

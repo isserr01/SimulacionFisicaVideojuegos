@@ -108,7 +108,7 @@ void initPhysics(bool interactive)
 	SceneManager::instance().registerScene<P3S_Scene>("P3S_Scene");
 
 	// Cargar la escena inicial
-	SceneManager::instance().changeScene("EscenaVacia");
+	SceneManager::instance().changeScene("P3S_Scene");
 	
 }
 

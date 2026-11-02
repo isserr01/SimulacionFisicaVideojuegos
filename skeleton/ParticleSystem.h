@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <cstddef>
+#include "ForceRegistry.h"
 
 class Particle;
 class ForceGenerator;
@@ -44,6 +45,7 @@ private:
     std::vector<float> edad;
     std::vector<int> emisor;
     std::vector<ForceEntry> forceGenerators;
+    ForceRegistry forceRegistry;
     std::vector<ParticleGenerator*> particleGenerators;
     std::size_t activeCount;
     float gravity;

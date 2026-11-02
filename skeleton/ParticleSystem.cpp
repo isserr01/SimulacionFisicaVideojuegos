@@ -57,6 +57,19 @@ bool ParticleSystem::create(float x, float y, float z,
         1.0);
     particle->setMass(mass > 0.0 ? mass : 1.0);
 
+    if (emitter == 20)
+    {
+        particle->setColor(0.0f, 0.2f, 1.0f, 1.0f);
+    }
+    else if (emitter == 21)
+    {
+        particle->setColor(1.0f, 0.0f, 0.0f, 1.0f);
+    }
+    else
+    {
+        particle->setRandomColor();
+    }
+
     edad[activeCount] = 0.0f;
     vida[activeCount] = std::max(MIN_LIFETIME, lifetime);
     emisor[activeCount] = emitter;
@@ -78,17 +91,25 @@ void ParticleSystem::update(float deltaTime)
         if (generator != nullptr)
             generator->update(*this, dt);
 
+    // Reconstruimos el registro con las partículas activas del frame.
+    // Es necesario porque el pool reutiliza partículas y las intercambia
+    // al retirar las que han expirado. Así evitamos registros obsoletos.
+    forceRegistry.clear();
+    for (std::size_t particleIndex = 0; particleIndex < activeCount; ++particleIndex)
+    {
+        for (const auto& entry : forceGenerators)
+        {
+            if (entry.enabled && entry.generator != nullptr)
+                forceRegistry.add(particles[particleIndex], entry.generator);
+        }
+    }
+    forceRegistry.updateForces(dt);
+
     std::size_t i = 0;
     while (i < activeCount)
     {
         Particle* particle = particles[i];
         edad[i] += dt;
-
-        for (const auto& entry : forceGenerators)
-        {
-            if (entry.enabled && entry.generator != nullptr)
-                particle->applyForceGenerator(*entry.generator, dt);
-        }
 
         particle->integrate(dt);
 
@@ -117,7 +138,6 @@ void ParticleSystem::update(float deltaTime)
             }
 
             --activeCount;
-            // No incrementamos i: el elemento intercambiado también debe revisarse.
         }
         else
         {
@@ -169,6 +189,7 @@ bool ParticleSystem::isParticleGeneratorEnabled(std::size_t index) const
 
 void ParticleSystem::clearForceGenerators()
 {
+    forceRegistry.clear();
     forceGenerators.clear();
 }
 

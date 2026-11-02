@@ -38,6 +38,9 @@ public:
     void applyForceGenerator(ForceGenerator& generator, double dt);
     void clearForces();
 
+    void setColor(float,float,float,float);
+    void setRandomColor();
+
 
 private:
     Vector3D forceAccum;

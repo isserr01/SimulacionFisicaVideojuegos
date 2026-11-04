@@ -24,7 +24,6 @@ void SceneManager::applyPendingSceneChange() {
     m_currentScene = m_factories[m_pendingSceneName]();
     if (m_currentScene) {
         m_currentScene->init();
-        std::cout << "[SceneManager] Escena cargada: " << m_pendingSceneName << "\n";
     }
 
     m_hasPendingChange = false;
@@ -51,19 +50,6 @@ void SceneManager::keyPress(unsigned char key, const physx::PxTransform& cameraT
         changeScene("EscenaVacia");
         return; // Consumimos el evento para que no interfiera con la escena
     }
-    else if (key == '0') {
-        changeScene("P0S_Scene");
-    }
-    else if (key == '1') {
-        changeScene("P1S_Scene");
-    }
-    else if (key == '2') {
-        changeScene("P2S_Scene");
-    }
-    else if (key == '3') {
-        changeScene("P3S_Scene");
-    }
-
 
     // Si no es una tecla de navegación global, se la pasamos a la escena activa
     if (m_currentScene != nullptr) {

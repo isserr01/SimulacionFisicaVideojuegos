@@ -16,6 +16,10 @@
 - `ParticleGenerator.h/.cpp`: partícula modelo, emisión periódica y muestreo uniforme, normal y gaussiano.
 - `ParticleSystem.h/.cpp`: gestiona emisores y registro de fuerzas activos por sistema.
 - `P3S_Scene.h/.cpp`: integra controles, proyectiles, emisores y generadores de fuerza.
+- `ForceGenerator.h/.cpp`: generadores de fuerza
+- `ForceRegistry.h/.cpp`: gestiona las fuerzas aplicadas a cada partícula
+- `Particle.h/.cpp`: crea las partículas
+- `Vector3D.h/.cpp`: gestiona los vectores utilizados durante todo el proyecto
 
 ## Requisitos
 - Requisito A.1) -> "Particle.cpp" 81-103

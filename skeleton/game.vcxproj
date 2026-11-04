@@ -265,9 +265,6 @@
     <ClCompile Include="ForceGenerator.cpp" />
     <ClCompile Include="ForceRegistry.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="P0S_Scene.cpp" />
-    <ClCompile Include="P1S_Scene.cpp" />
-    <ClCompile Include="P2S_Scene.cpp" />
     <ClCompile Include="P3S_Scene.cpp" />
     <ClCompile Include="ParticleGenerator.cpp" />
     <ClCompile Include="Projectile.cpp" />
@@ -286,9 +283,6 @@
     <ClInclude Include="EmptyScene.h" />
     <ClInclude Include="ForceGenerator.h" />
     <ClInclude Include="ForceRegistry.h" />
-    <ClInclude Include="P0S_Scene.h" />
-    <ClInclude Include="P1S_Scene.h" />
-    <ClInclude Include="P2S_Scene.h" />
     <ClInclude Include="P3S_Scene.h" />
     <ClInclude Include="ParticleGenerator.h" />
     <ClInclude Include="Projectile.h" />

@@ -14,12 +14,15 @@ public:
         Vector3D acceleration, double damping);
     Particle(Vector3D position, Vector3D velocity,
         Vector3D acceleration, double damping, double massValue);
+    Particle(Vector3D position, Vector3D velocity,
+        Vector3D acceleration, double damping, double massValue, bool boxShape);
     ~Particle();
 
     Particle(const Particle&) = delete;
     Particle& operator=(const Particle&) = delete;
 
     void integrate(double dt);
+    void integrateExplicit(double dt);
     void reset(Vector3D position, Vector3D velocity,
         Vector3D acceleration, double damping);
     void setPosition(Vector3D position);

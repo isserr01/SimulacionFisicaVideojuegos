@@ -43,6 +43,12 @@ Particle::Particle(Vector3D position, Vector3D velocity,
 
 Particle::Particle(Vector3D position, Vector3D velocity,
     Vector3D acceleration, double dampingValue, double massValue)
+    : Particle(position, velocity, acceleration, dampingValue, massValue, false)
+{
+}
+
+Particle::Particle(Vector3D position, Vector3D velocity,
+    Vector3D acceleration, double dampingValue, double massValue, bool boxShape)
     : forceAccum(0.0, 0.0, 0.0),
     vel(velocity),
     acc(acceleration),
@@ -54,8 +60,9 @@ Particle::Particle(Vector3D position, Vector3D velocity,
         static_cast<float>(position.z))),
     renderItem(nullptr)
 {
-    physx::PxShape* shape =
-        CreateShape(physx::PxSphereGeometry(PARTICLE_RADIUS));
+    physx::PxShape* shape = boxShape
+        ? CreateShape(physx::PxBoxGeometry(0.5f, 0.5f, 0.5f))
+        : CreateShape(physx::PxSphereGeometry(PARTICLE_RADIUS));
 
     if (shape != nullptr)
     {
@@ -99,6 +106,22 @@ void Particle::integrate(double dt)
     vel.y *= factor;
     vel.z *= factor;
 
+    clearForces();
+}
+
+void Particle::integrateExplicit(double dt)
+{
+    if (dt <= 0.0) return;
+    const double invMass = (mass > 0.0) ? 1.0 / mass : 0.0;
+    // Euler explicito: la posicion usa la velocidad anterior.
+    pose.p.x += static_cast<float>(vel.x * dt);
+    pose.p.y += static_cast<float>(vel.y * dt);
+    pose.p.z += static_cast<float>(vel.z * dt);
+    vel.x += (acc.x + forceAccum.x * invMass) * dt;
+    vel.y += (acc.y + forceAccum.y * invMass) * dt;
+    vel.z += (acc.z + forceAccum.z * invMass) * dt;
+    const double factor = std::pow(damping, dt);
+    vel.x *= factor; vel.y *= factor; vel.z *= factor;
     clearForces();
 }
 

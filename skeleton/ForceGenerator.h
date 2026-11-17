@@ -3,6 +3,7 @@
 
 #include "Particle.h"
 #include <cmath>
+#include <algorithm>
 
 
 class ForceGenerator
@@ -210,4 +211,139 @@ private:
     double tau;
     double elapsed;
     bool active;
+};
+
+
+// --------------------------------------------------
+// MUELLE: particula unida a un punto fijo
+// --------------------------------------------------
+class SpringToAnchorGenerator : public ForceGenerator
+{
+public:
+    SpringToAnchorGenerator(Vector3D anchor, double restLength, double k, double damping = 0.0)
+        : anchor(anchor), restLength(restLength), k(k), damping(damping) {}
+    void setK(double value) { k = value < 0.0 ? 0.0 : value; }
+    double getK() const { return k; }
+    void updateForce(Particle& p, double) override
+    {
+        Vector3D delta = p.getPosition() - anchor;
+        const double length = delta.magnitude();
+        if (length < 1e-6) return;
+        Vector3D dir = delta.normalize();
+        const double extension = length - restLength;
+        const double speedAlong = p.getVelocity().dot(dir);
+        const double magnitude = -k * extension - damping * speedAlong;
+        p.addForce(Vector3D(dir.x * magnitude, dir.y * magnitude, dir.z * magnitude));
+    }
+private:
+    Vector3D anchor;
+    double restLength, k, damping;
+};
+
+// --------------------------------------------------
+// MUELLE ENTRE DOS PARTICULAS / GOMA ELASTICA
+// --------------------------------------------------
+
+class PairSpringGenerator : public ForceGenerator
+{
+public:
+    PairSpringGenerator(
+        Particle* p1,
+        Particle* p2,
+        double restLength,
+        double k,
+        bool elasticBand,
+        double damping
+    )
+        : p1(p1),
+        p2(p2),
+        restLength(restLength),
+        k(k),
+        elasticBand(elasticBand),
+        damping(damping)
+    {
+    }
+
+    void updateForce(Particle& particle, double dt) override
+    {
+        if (p1 == nullptr || p2 == nullptr)
+            return;
+
+        if (&particle != p1 && &particle != p2)
+            return;
+
+        Vector3D pos1 = p1->getPosition();
+        Vector3D pos2 = p2->getPosition();
+
+        Vector3D vel1 = p1->getVelocity();
+        Vector3D vel2 = p2->getVelocity();
+
+        double dx = pos2.x - pos1.x;
+        double dy = pos2.y - pos1.y;
+        double dz = pos2.z - pos1.z;
+
+        double distance = std::sqrt(dx * dx + dy * dy + dz * dz);
+        if (distance < 0.0001)
+            return;
+
+        double nx = dx / distance;
+        double ny = dy / distance;
+        double nz = dz / distance;
+
+        double extension = distance - restLength;
+        if (elasticBand && extension <= 0.0)
+            return;
+
+        double relativeVelocity =
+            (vel2.x - vel1.x) * nx +
+            (vel2.y - vel1.y) * ny +
+            (vel2.z - vel1.z) * nz;
+
+        double forceMagnitude =
+            k * extension + damping * relativeVelocity;
+
+        double fx = forceMagnitude * nx;
+        double fy = forceMagnitude * ny;
+        double fz = forceMagnitude * nz;
+
+        if (&particle == p1)
+        {
+            particle.addForce(Vector3D(fx, fy, fz));
+        }
+        else
+        {
+            particle.addForce(Vector3D(-fx, -fy, -fz));
+        }
+    }
+
+private:
+    Particle* p1;
+    Particle* p2;
+
+    double restLength;
+    double k;
+    bool elasticBand;
+    double damping;
+};
+
+
+// --------------------------------------------------
+// EMPUJE DE ARQUIMEDES PARA UN CUBO
+// --------------------------------------------------
+class BuoyancyGenerator : public ForceGenerator
+{
+public:
+    BuoyancyGenerator(double waterLevel, double cubeHeight, double volume, double density = 1000.0)
+        : waterLevel(waterLevel), cubeHeight(cubeHeight), volume(volume), density(density) {}
+    void setVolume(double v) { volume = v > 0.0 ? v : 0.0; }
+    void setDensity(double d) { density = d > 0.0 ? d : 0.0; }
+    void updateForce(Particle& p, double) override
+    {
+        const double bottom = p.getPosition().y - cubeHeight * 0.5;
+        const double immersed = (std::max)(0.0, (std::min)(1.0,
+            (waterLevel - bottom) / cubeHeight));
+        p.addForce(Vector3D(0.0, density * volume * immersed * 9.8, 0.0));
+    }
+private:
+    double waterLevel, cubeHeight, volume, density;
 };
